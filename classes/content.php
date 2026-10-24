@@ -17,6 +17,7 @@
 namespace block_oksigeniatesape;
 
 use local_oksigeniatesape\local\characters;
+use local_oksigeniatesape\local\games;
 use local_oksigeniatesape\local\missions;
 use local_oksigeniatesape\local\pacts;
 use local_oksigeniatesape\local\regions;
@@ -56,12 +57,20 @@ class content {
         if (!has_capability('local/oksigeniatesape:play', $context, $userid)) {
             return null;
         }
+        // A student, in their game of the course: the course, or the game more of their group.
+        $key = games::key($courseid, $userid);
+        if ($key !== $courseid) {
+            if (!regions::enabled($key)) {
+                return null;
+            }
+            $data['place'] = self::place($key);
+        }
         $char = characters::get($userid);
         if (!$char) {
             return $data + ['create' => true];
         }
-        $team = teams::of($courseid, $userid);
-        return $data + ['hero' => self::hero($char, $courseid), 'team' => $team ? format_string($team->name) : ''];
+        $team = teams::of($key, $userid);
+        return $data + ['hero' => self::hero($char, $key), 'team' => $team ? format_string($team->name) : ''];
     }
 
     /**
@@ -76,13 +85,15 @@ class content {
             if (count($courses) >= self::COURSES) {
                 break;
             }
-            if (!regions::enabled((int) $course->id)) {
-                continue;
-            }
             $context = \context_course::instance((int) $course->id);
             $teacher = has_capability('local/oksigeniatesape:award', $context, $userid);
+            // A student, their game of the course: the course, or the game more of their group.
+            $key = $teacher ? (int) $course->id : games::key((int) $course->id, $userid);
+            if (!regions::enabled($key)) {
+                continue;
+            }
             $courses[] = ['name' => format_string($course->fullname, true, ['context' => $context]),
-                'place' => self::place((int) $course->id),
+                'place' => self::place($key),
                 'url' => self::url($teacher ? 'teach' : 'play', (int) $course->id)->out(false)];
         }
         if (!$courses) {

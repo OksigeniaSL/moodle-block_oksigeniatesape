@@ -75,4 +75,30 @@ final class content_test extends \advanced_testcase {
         $this->assertSame('Lucía', $mine['hero']['name']);
         $this->assertNull(content::for_user((int) $gen->create_user()->id));
     }
+
+    public function test_a_student_of_a_game_more_sees_their_game(): void {
+        $this->resetAfterTest();
+        $gen = $this->getDataGenerator();
+        $course = $gen->create_course();
+        $c = (int) $course->id;
+        regions::save($c, ['enabled' => 1]);
+        missions::install($c, 'livingthings', 'valley', 'es');
+        // 5th B plays apart: until its game is on, nothing for its students.
+        $group = $gen->create_group(['courseid' => $c, 'name' => '5.º B']);
+        $student = $gen->create_and_enrol($course, 'student', ['firstname' => 'Bruno']);
+        $gen->create_group_member(['groupid' => $group->id, 'userid' => $student->id]);
+        $key = \local_oksigeniatesape\local\games::create($c, (int) $group->id);
+        $this->assertNull(content::for_course($c, (int) $student->id));
+        regions::save($key, ['enabled' => 1]);
+        missions::install($key, 'livingthings', 'azara', 'py');
+        $mission = missions::get($key);
+        characters::create($student->id, 'sage', 'm');
+        // Their game: its place, in its own story.
+        $data = content::for_course($c, (int) $student->id);
+        $first = missions::text($mission->data['chapters'][0]['name'], 'azara', 'py');
+        $this->assertSame(get_string('now', 'block_oksigeniatesape', $first), $data['place']);
+        $this->assertSame('Bruno', $data['hero']['name']);
+        $mine = content::for_user((int) $student->id);
+        $this->assertSame([get_string('now', 'block_oksigeniatesape', $first)], array_column($mine['courses'], 'place'));
+    }
 }
