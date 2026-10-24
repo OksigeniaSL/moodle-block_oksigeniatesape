@@ -1,0 +1,63 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+}}
+{{!
+    @template block_oksigeniatesape/content
+
+    The block of Tesapé: on a course, the hero of the student and the way in, or the pages of the teacher; on the
+    dashboard, the courses where Tesapé is played.
+
+    Example context (json):
+    {
+        "hero": {"name": "Lucía", "role": "Exploradora", "level": "Nivel 3"},
+        "team": "Equipo Garza",
+        "place": "La clase está en: Bosque de las Huellas",
+        "playurl": "https://example.com/local/oksigeniatesape/play.php?id=2"
+    }
+}}
+<div class="block-oksigeniatesape">
+    {{#off}}
+        <p class="mb-2">{{#str}} off, block_oksigeniatesape {{/str}}</p>
+        <a class="btn btn-secondary" href="{{teachurl}}">{{#str}} setup, block_oksigeniatesape {{/str}}</a>
+    {{/off}}
+    {{#hero}}
+        <p class="tesape-hero mb-1"><strong>{{name}}</strong>{{#role}} · {{role}}{{/role}} · {{level}}</p>
+    {{/hero}}
+    {{#team}}
+        <p class="mb-1">{{#str}} team, block_oksigeniatesape, {{team}} {{/str}}</p>
+    {{/team}}
+    {{#place}}
+        <p class="tesape-place mb-2">{{place}}</p>
+    {{/place}}
+    {{#dashboard}}
+        <ul class="list-unstyled mb-0">
+            {{#courses}}
+                <li class="mb-2"><a href="{{url}}">{{name}}</a>{{#place}}<br><small class="text-muted">{{place}}</small>{{/place}}</li>
+            {{/courses}}
+        </ul>
+    {{/dashboard}}
+    {{^dashboard}}
+        {{#teacher}}
+            <a class="btn btn-primary mb-1" href="{{teachurl}}">{{#str}} teach, block_oksigeniatesape {{/str}}</a>
+            <a class="btn btn-secondary mb-1" href="{{boardurl}}">{{#str}} board, block_oksigeniatesape {{/str}}</a>
+        {{/teacher}}
+        {{^teacher}}
+            {{#playurl}}
+                <a class="btn btn-primary" href="{{playurl}}">{{#create}}{{#str}} create, block_oksigeniatesape {{/str}}{{/create}}{{^create}}{{#str}} enter, block_oksigeniatesape {{/str}}{{/create}}</a>
+            {{/playurl}}
+        {{/teacher}}
+    {{/dashboard}}
+</div>
